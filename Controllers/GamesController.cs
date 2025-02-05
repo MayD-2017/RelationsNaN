@@ -167,14 +167,17 @@ namespace RelationsNaN.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddPlatform([Bind("Name,Image,Platforms")] Game game, int platformid)
+        public async Task<IActionResult> AddPlatform([Bind("Name,Image,Platforms")] Game game, int platformId)
         {
-            ModelState.Remove("Name");
-            ModelState.Remove("Image");
+            ModelState.Remove(nameof(game.Name));
+            ModelState.Remove(nameof(game.Image));
             if (ModelState.IsValid)
-            {
-                var platform = await _context.Platform.FindAsync(platformid);
-                if(platform != null) game.Platforms.Add(platform); 
+            { //Note : bizzare problème? Game.platform est tjr null? Pq?
+                var platform = await _context.Platform.FindAsync(platformId);
+                if (game.Platforms == null) 
+                    game.Platforms = new List<Platform>();
+                if(platform != null && !game.Platforms.Contains(platform)) 
+                    game.Platforms.Add(platform); 
                 await _context.SaveChangesAsync();
             }
             ViewData["Platforms"] = new SelectList(_context.Platform, "Id", "Name", game.Platforms);
